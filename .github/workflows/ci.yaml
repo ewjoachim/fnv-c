@@ -9,6 +9,12 @@ on:
     types:
       - created
 
+# Cancel an in-progress run when a newer one starts for the same branch/PR.
+# Releases are exempt so an in-flight publish is never interrupted.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'release' }}
+
 jobs:
   linux_lint_and_test:
     runs-on: ubuntu-latest
