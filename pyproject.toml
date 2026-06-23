@@ -45,10 +45,20 @@ build-frontend = "build"
 # Build the wheel, then run the actual test suite against it.
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
+# PyPy is opt-in since cibuildwheel 4.x (gives us pp311; pp310 is EOL).
+enable = ["pypy"]
+# Don't ship free-threaded (3.14t) wheels yet — they aren't covered by our
+# own test matrix. Enable once we add a 3.14t CI job.
+skip = ["cp314t-*"]
 
 [tool.cibuildwheel.linux]
 # Only 64-bit wheels (x86_64). Drop legacy 32-bit (i686) builds.
 archs = ["auto64"]
+
+[tool.cibuildwheel.macos]
+# Separate arm64 + x86_64 wheels. The Apple-silicon runner builds arm64
+# natively and cross-compiles x86_64 (its tests are skipped automatically).
+archs = ["x86_64", "arm64"]
 
 [tool.ruff]
 line-length = 88
