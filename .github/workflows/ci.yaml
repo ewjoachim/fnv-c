@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "pypy3.8"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "pypy3.10", "pypy3.11"]
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event. Selected python version is ${{ matrix.python-version }}."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
@@ -49,7 +49,7 @@ jobs:
     runs-on: macos-13
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "pypy3.8"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "pypy3.10", "pypy3.11"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
