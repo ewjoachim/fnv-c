@@ -69,13 +69,10 @@ jobs:
   # jobs above succeed, so we never publish something that wasn't tested. ---
 
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels
     needs: [linux_lint_and_test, macos_test]
     if: github.event_name == 'release'
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -98,7 +95,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: wheels-${{ matrix.os }}
+          name: wheels
           path: wheelhouse/*.whl
 
   build_sdist:
