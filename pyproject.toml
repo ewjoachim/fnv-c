@@ -1,3 +1,19 @@
+[build-system]
+requires = ["setuptools", "wheel", "cffi>=1.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+# Use the PEP 517 build frontend so the [build-system] requires above
+# (in particular cffi) are available when compiling the C extension.
+build-frontend = "build"
+# Build the wheel, then run the actual test suite against it.
+test-requires = "pytest"
+test-command = "pytest {project}/tests"
+
+[tool.cibuildwheel.linux]
+# Only 64-bit wheels (x86_64). Drop legacy 32-bit (i686) builds.
+archs = ["auto64"]
+
 [tool.ruff]
 # Enable Pyflakes `E` and `F` codes by default.
 select = ["E", "F", "W", "N", "UP", "B", "I", "PL", "RUF"]
