@@ -32,7 +32,6 @@ dev = [
     "invoke",
     "dunamai",
     "pdoc3",
-    "twine",
     "cffi>=1.17",
 ]
 
