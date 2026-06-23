@@ -21,26 +21,20 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install deps and build the extension
+        run: uv sync --python "${{ matrix.python-version }}"
       - name: Display Python version
-        run: python --version
-      - name: Deps install
-        run: |
-          pip install -r dev-requirements.txt
-      - name: Install develop
-        run: |
-          python3 setup.py develop
+        run: uv run python --version
       - name: Run lint
-        run: |
-          invoke lint --no-fix
+        run: uv run invoke lint --no-fix
       - name: Run tests
-        run: |
-          invoke test --coverage
+        run: uv run invoke test --coverage
       - name: Upload coverage reports to Codecov
-        if: matrix.python-version == '3.7' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: matrix.python-version == '3.12' && github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -54,22 +48,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
-      - name: Install dependencies
-        run: |
-          pip install -r dev-requirements.txt
-
-      - name: Install fnv-c as editable
-        run: |
-          python3 setup.py develop
+      - name: Install deps and build the extension
+        run: uv sync --python "${{ matrix.python-version }}"
 
       - name: Run tests
-        run: |
-          invoke test --coverage
+        run: uv run invoke test --coverage
 
   # --- Release: only runs on a published release, and only after the test
   # jobs above succeed, so we never publish something that wasn't tested. ---
@@ -89,24 +77,17 @@ jobs:
           # dunamai (invoke bump-version) needs the full history and tags.
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install build dependencies
-        run: |
-          pip install dunamai==1.17.0 invoke==2.1.1 cibuildwheel==4.1.0
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Bump version
-        run: |
-          invoke bump-version
+        run: uv run --no-project --with invoke --with dunamai invoke bump-version
 
       - name: Build wheels
         # Builds manylinux + musllinux wheels and runs auditwheel repair
-        # automatically. Covers CPython 3.9-3.14 and PyPy 3.9-3.11.
-        run: |
-          cibuildwheel --output-dir wheelhouse
+        # automatically. Covers CPython 3.10-3.14 and PyPy 3.10-3.11
+        # (cibuildwheel reads requires-python from pyproject.toml).
+        run: uvx cibuildwheel@4.1.0 --output-dir wheelhouse
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -125,22 +106,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
-        run: |
-          pip install dunamai==1.17.0 invoke==2.1.1 build==1.2.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Bump version
-        run: |
-          invoke bump-version
+        run: uv run --no-project --with invoke --with dunamai invoke bump-version
 
       - name: Build sdist
-        run: |
-          python -m build --sdist --outdir dist
+        run: uv build --sdist --out-dir dist
 
       - name: Upload sdist
         uses: actions/upload-artifact@v4
@@ -160,18 +133,11 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install twine
-        run: |
-          pip install twine==4.0.2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Upload to PyPi
         env:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-        run: |
-          twine upload dist/*
+        run: uvx twine upload dist/*
